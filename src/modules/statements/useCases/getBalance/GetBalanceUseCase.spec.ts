@@ -47,4 +47,31 @@ describe('Get Balance Use Case', () => {
     ).rejects.toBeInstanceOf(GetBalanceError);
   });
 
+  it('should be able to get the balance with statement', async () => {
+    const user = await inMemoryUsersRepository.create({
+      name: 'User Test',
+      email: 'user@teste.com',
+      password: '1234',
+    });
+
+    await inMemoryStatementsRepository.create({
+      user_id: user.id as string,
+      type: OperationType.DEPOSIT,
+      amount: 100,
+      description: 'Deposit Test',
+    });
+
+    await inMemoryStatementsRepository.create({
+      user_id: user.id as string,
+      type: OperationType.WITHDRAW,
+      amount: 50,
+      description: 'Withdraw Test',
+    });
+
+    const balance = await getBalanceUseCase.execute({
+      user_id: user.id as string,
+    });
+
+    expect(balance).toHaveProperty('balance', 50);
+  });
 });
